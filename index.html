@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Estrategia | Natasha da Rosa</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --vd: #0d2218; --vm: #1a3d2b; --vc: #2d6147; --vb: #4a9469; --cr: #f5f0e8; --do: #c9a96e; }
+body { font-family: 'Montserrat', sans-serif; background: var(--vd); color: var(--cr); min-height: 100vh; }
+
+/* CONFIG OVERLAY */
+.cfg-overlay { position: fixed; inset: 0; background: rgba(13,34,24,0.97); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.cfg-box { background: #0d2218; border: 1px solid rgba(74,148,105,0.35); padding: 44px; max-width: 480px; width: 100%; }
+.cfg-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-style: italic; font-weight: 300; color: var(--cr); margin-bottom: 6px; }
+.cfg-desc { font-size: 11px; color: rgba(245,240,232,0.4); line-height: 1.9; margin-bottom: 28px; }
+.cfg-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--vb); margin-bottom: 8px; font-weight: 500; display: block; }
+.cfg-input { width: 100%; background: rgba(45,97,71,0.1); border: 1px solid rgba(74,148,105,0.2); color: var(--cr); font-family: 'Montserrat', sans-serif; font-size: 12px; padding: 13px 15px; outline: none; margin-bottom: 18px; transition: border-color 0.3s; }
+.cfg-input:focus { border-color: var(--do); }
+.cfg-input::placeholder { color: rgba(245,240,232,0.2); font-style: italic; }
+.cfg-btn { width: 100%; padding: 17px; background: var(--vc); border: 1px solid var(--vb); color: var(--cr); font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+.cfg-btn:hover { background: var(--vb); border-color: var(--do); }
+.cfg-note { font-size: 10px; color: rgba(245,240,232,0.25); margin-top: 16px; line-height: 1.7; text-align: center; font-style: italic; }
+.cfg-skip { font-size: 10px; color: rgba(245,240,232,0.2); text-align: center; margin-top: 12px; cursor: pointer; text-decoration: underline; }
+.cfg-skip:hover { color: var(--do); }
+
+/* HEADER */
+.header { padding: 28px 40px; border-bottom: 1px solid rgba(74,148,105,0.15); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.brand-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; font-weight: 300; }
+.brand-sub { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--vb); font-weight: 500; }
+.header-tag { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--do); border: 1px solid rgba(201,169,110,0.3); padding: 6px 14px; }
+
+/* LAYOUT */
+.main { display: grid; grid-template-columns: 400px 1fr; min-height: calc(100vh - 77px); }
+@media(max-width:900px){ .main { grid-template-columns: 1fr; } }
+
+/* LEFT */
+.left-panel { border-right: 1px solid rgba(74,148,105,0.12); padding: 32px; display: flex; flex-direction: column; gap: 18px; background: rgba(13,34,24,0.5); }
+.panel-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; font-weight: 300; margin-bottom: 4px; }
+.panel-desc { font-size: 11px; font-weight: 300; color: rgba(245,240,232,0.4); line-height: 1.8; }
+textarea.main-area { width: 100%; min-height: 280px; background: rgba(45,97,71,0.08); border: 1px solid rgba(74,148,105,0.2); color: var(--cr); font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 300; line-height: 1.8; padding: 16px; resize: vertical; outline: none; transition: border-color 0.3s; }
+textarea.main-area:focus { border-color: var(--do); }
+textarea.main-area::placeholder { color: rgba(245,240,232,0.2); font-style: italic; }
+textarea.notes-area { width: 100%; min-height: 100px; background: rgba(201,169,110,0.04); border: 1px solid rgba(201,169,110,0.18); color: var(--cr); font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 300; line-height: 1.8; padding: 14px; resize: vertical; outline: none; transition: border-color 0.3s; }
+textarea.notes-area:focus { border-color: var(--do); }
+textarea.notes-area::placeholder { color: rgba(201,169,110,0.25); font-style: italic; }
+.lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--do); margin-bottom: 8px; font-weight: 500; }
+.btn-gerar { width: 100%; padding: 18px; background: var(--vc); border: 1px solid var(--vb); color: var(--cr); font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-gerar:hover:not(:disabled) { background: var(--vb); border-color: var(--do); }
+.btn-gerar:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-trello { width: 100%; padding: 15px; background: transparent; border: 1px solid rgba(201,169,110,0.35); color: var(--do); font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-trello:hover:not(:disabled) { background: rgba(201,169,110,0.08); border-color: var(--do); }
+.btn-trello:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-novo { width: 100%; padding: 13px; background: transparent; border: 1px solid rgba(245,240,232,0.1); color: rgba(245,240,232,0.3); font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; display: none; align-items: center; justify-content: center; gap: 10px; }
+.btn-novo:hover { border-color: rgba(245,240,232,0.3); color: rgba(245,240,232,0.6); }
+.loading-dots span { display: inline-block; animation: dot 1.2s infinite; font-size: 16px; }
+.loading-dots span:nth-child(2){ animation-delay:.2s; }
+.loading-dots span:nth-child(3){ animation-delay:.4s; }
+@keyframes dot { 0%,80%,100%{opacity:.2;transform:translateY(0)} 40%{opacity:1;transform:translateY(-4px)} }
+.status { font-size: 11px; text-align: center; padding: 10px 14px; display: none; line-height: 1.6; }
+.status.ok { background: rgba(74,148,105,0.15); border: 1px solid rgba(74,148,105,0.3); color: var(--vb); }
+.status.err { background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); color: #e07070; }
+.status.info { background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.2); color: var(--do); }
+
+/* RIGHT */
+.right-panel { padding: 40px 40px 80px; overflow-y: auto; }
+.empty-state { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; opacity: 0.35; padding: 80px 20px; }
+.empty-icon { font-size: 48px; }
+.empty-state p { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; font-weight: 300; max-width: 360px; line-height: 1.6; }
+.resultado { display: none; animation: fadeUp 0.5s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.cli-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 1px solid rgba(74,148,105,0.15); flex-wrap: wrap; }
+.cli-tag { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--vb); margin-bottom: 6px; }
+.cli-nome { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-style: italic; font-weight: 300; line-height: 1.1; }
+.cli-nicho { font-size: 11px; color: rgba(245,240,232,0.45); margin-top: 4px; }
+.btn-pdf { background: transparent; border: 1px solid rgba(201,169,110,0.3); color: var(--do); padding: 10px 20px; font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
+.btn-pdf:hover { background: rgba(201,169,110,0.1); }
+.sec { margin-bottom: 44px; }
+.sec-lbl { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--vb); margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.sec-lbl::after { content:''; flex:1; height:1px; background: rgba(74,148,105,0.2); }
+.pos-box { background: rgba(201,169,110,0.05); border: 1px solid rgba(201,169,110,0.18); border-left: 3px solid var(--do); padding: 22px; }
+.pos-box p { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; font-weight: 300; line-height: 1.8; }
+.ess-box { background: rgba(74,148,105,0.06); border: 1px solid rgba(74,148,105,0.2); border-left: 3px solid var(--vb); padding: 22px; }
+.ess-box p { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; font-weight: 300; line-height: 1.8; }
+.pilares { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+@media(max-width:1100px){ .pilares { grid-template-columns: 1fr; } }
+.pilar { background: rgba(45,97,71,0.1); border: 1px solid rgba(74,148,105,0.2); padding: 22px; position: relative; }
+.pilar::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background: linear-gradient(90deg,var(--vb),var(--do)); }
+.pilar-n { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; font-style: italic; color: rgba(74,148,105,0.2); line-height: 1; margin-bottom: 6px; }
+.pilar-nome { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 400; font-style: italic; margin-bottom: 10px; }
+.pilar-desc { font-size: 11px; font-weight: 300; color: rgba(245,240,232,0.5); line-height: 1.8; }
+.cont-lista { display: flex; flex-direction: column; gap: 10px; }
+.cont-item { background: rgba(13,34,24,0.5); border: 1px solid rgba(74,148,105,0.13); padding: 16px 18px; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; transition: border-color 0.25s; }
+.cont-item:hover { border-color: rgba(74,148,105,0.3); }
+.cont-tag { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--vb); border: 1px solid rgba(74,148,105,0.25); padding: 4px 8px; white-space: nowrap; margin-top: 3px; }
+.cont-fmt { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: rgba(245,240,232,0.3); margin-bottom: 4px; }
+.cont-tit { font-size: 13px; font-weight: 400; line-height: 1.5; margin-bottom: 4px; }
+.cont-int { font-size: 11px; font-weight: 300; color: rgba(245,240,232,0.4); font-style: italic; }
+.btn-copy { background: transparent; border: none; color: rgba(245,240,232,0.2); cursor: pointer; padding: 4px; transition: color 0.2s; font-size: 14px; }
+.btn-copy:hover { color: var(--do); }
+.notas-box { background: rgba(201,169,110,0.04); border: 1px solid rgba(201,169,110,0.15); padding: 20px; }
+.notas-inner { width: 100%; min-height: 120px; background: transparent; border: none; border-top: 1px solid rgba(201,169,110,0.12); margin-top: 12px; padding-top: 14px; color: var(--cr); font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 300; line-height: 1.8; resize: vertical; outline: none; }
+.notas-inner::placeholder { color: rgba(201,169,110,0.25); font-style: italic; }
+::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(74,148,105,0.3);border-radius:2px}
+@media print { .left-panel,.cfg-overlay,.btn-pdf,.btn-copy,.status{display:none!important} .main{grid-template-columns:1fr!important} body{background:white;color:#111} .cli-nome,.pilar-nome{color:#111!important} .pos-box,.ess-box,.pilar,.cont-item{background:white!important;border-color:#ccc!important} }
+</style>
+</head>
+<body>
+
+<!-- CONFIG OVERLAY -->
+<div class="cfg-overlay" id="cfgOverlay">
+  <div class="cfg-box">
+    <div class="cfg-title">Configurar Trello</div>
+    <div class="cfg-desc">Insira suas credenciais uma vez. Elas ficam salvas apenas no seu navegador e nunca aparecem em nenhum arquivo ou codigo publico.</div>
+    <label class="cfg-label">API Key do Trello</label>
+    <input class="cfg-input" id="inKey" type="password" placeholder="Cole sua API Key aqui...">
+    <label class="cfg-label">Token do Trello</label>
+    <input class="cfg-input" id="inToken" type="password" placeholder="Cole seu Token aqui...">
+    <button class="cfg-btn" onclick="salvarCfg()">Salvar e comecar</button>
+    <div class="cfg-note">Suas credenciais ficam salvas localmente no navegador. Nenhum arquivo publico contem esses dados.</div>
+    <div class="cfg-skip" onclick="pularCfg()">Ja configurei antes, entrar direto</div>
+  </div>
+</div>
+
+<header class="header">
+  <div>
+    <div class="brand-name">Natasha da Rosa</div>
+    <div class="brand-sub">Gerador de Estrategia de Conteudo</div>
+  </div>
+  <div class="header-tag">Uso Exclusivo Interno</div>
+</header>
+
+<div class="main">
+  <aside class="left-panel">
+    <div>
+      <div class="panel-title">Cole as respostas do formulario</div>
+      <div class="panel-desc">Copie tudo que chegou no e-mail e cole aqui. A IA vai gerar a estrategia e enviar direto pro Trello.</div>
+    </div>
+    <textarea class="main-area" id="respostasInput" placeholder="Cole aqui as respostas do diagnostico recebidas no e-mail..."></textarea>
+    <div>
+      <div class="lbl">Suas observacoes pessoais</div>
+      <textarea class="notes-area" id="notasInput" placeholder="Impressoes suas, contexto extra, ajustes que quer incluir..."></textarea>
+    </div>
+    <button class="btn-gerar" id="btnGerar" onclick="gerarEstrategia()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      Gerar Estrategia
+    </button>
+    <button class="btn-trello" id="btnTrello" onclick="enviarTrello()" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="13" rx="1"/><rect x="14" y="3" width="7" height="8" rx="1"/></svg>
+      Enviar para o Trello
+    </button>
+    <button class="btn-novo" id="btnNovo" onclick="novoCliente()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo Cliente
+    </button>
+    <div class="status" id="statusMsg"></div>
+  </aside>
+
+  <main class="right-panel" id="rightPanel">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">&#127807;</div>
+      <p>Cole as respostas do diagnostico e clique em Gerar Estrategia</p>
+    </div>
+    <div class="resultado" id="resultado">
+      <div class="cli-header">
+        <div>
+          <div class="cli-tag">Estrategia gerada para</div>
+          <div class="cli-nome" id="cliNome">&#8212;</div>
+          <div class="cli-nicho" id="cliNicho">&#8212;</div>
+        </div>
+        <button class="btn-pdf" onclick="window.print()">&#8595; Exportar PDF</button>
+      </div>
+      <div class="sec">
+        <div class="sec-lbl">Posicionamento de Marca</div>
+        <div class="pos-box"><p id="txtPos"></p></div>
+      </div>
+      <div class="sec">
+        <div class="sec-lbl">Essencia e Voz</div>
+        <div class="ess-box"><p id="txtEss"></p></div>
+      </div>
+      <div class="sec">
+        <div class="sec-lbl">3 Pilares Editoriais</div>
+        <div class="pilares" id="pilaresGrid"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-lbl">Sugestoes de Conteudo</div>
+        <div class="cont-lista" id="contLista"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-lbl">Minhas Anotacoes e Ajustes</div>
+        <div class="notas-box">
+          <div class="lbl" style="margin-bottom:0">Espaco para suas sugestoes de melhoria</div>
+          <textarea class="notas-inner" id="minhasNotas" placeholder="Anote aqui o que voce quer ajustar ou melhorar na estrategia gerada."></textarea>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const TRELLO_API = 'https://api.trello.com/1';
+const PROMPT = `Voce e uma especialista em estrategia de conteudo para redes sociais com foco em posicionamento humanizado e linha editorial intencional. Voce trabalha com a Natasha da Rosa, Social Media e Content Creator.
+
+Analise as respostas do formulario de diagnostico e crie uma estrategia personalizada, real e unica para este cliente.
+
+REGRAS:
+- NUNCA seja generica. Cada estrategia deve nascer das respostas reais.
+- Foque na ESSENCIA da pessoa, nao so no nicho.
+- Posicionamento humanizado: mostre quem a pessoa e, nao so o que ela vende.
+- Os 3 pilares devem ter nomes criativos e unicos.
+- As sugestoes de conteudo devem ser ideias REAIS e concretas para essa pessoa especifica.
+- Adapte os formatos ao conforto com camera e tempo disponivel informados.
+- Considere o objetivo principal e o resultado que a pessoa quer em 3 meses.
+- A linha editorial deve focar em crescimento de perfil junto com o objetivo de cada cliente.
+
+Responda APENAS em JSON valido, sem markdown, sem texto fora do JSON:
+
+{
+  "cliente": { "nome": "...", "nicho": "..." },
+  "posicionamento": "2-3 frases que definem o posicionamento. Poetico, real e unico.",
+  "essencia": "1-2 frases sobre a voz e energia. Tom, presenca, como ela se comunica.",
+  "pilares": [
+    { "numero": "01", "nome": "Nome criativo", "descricao": "O que comunica e como conecta com o objetivo. 2-3 frases." },
+    { "numero": "02", "nome": "...", "descricao": "..." },
+    { "numero": "03", "nome": "...", "descricao": "..." }
+  ],
+  "conteudos": [
+    { "pilar": "Nome do pilar", "formato": "Reels / Carrossel / Stories / Feed estatico", "titulo": "Ideia especifica e real", "intencao": "Por que este conteudo e qual emocao ou acao gera no publico" }
+  ]
+}
+
+Gere entre 9 e 12 sugestoes de conteudo (3 a 4 por pilar).`;
+
+let estrategia = null;
+
+function getKey() { return localStorage.getItem('trello_key') || ''; }
+function getToken() { return localStorage.getItem('trello_token') || ''; }
+
+function initConfig() {
+  if (getKey() && getToken()) document.getElementById('cfgOverlay').style.display = 'none';
+}
+
+function salvarCfg() {
+  const k = document.getElementById('inKey').value.trim();
+  const t = document.getElementById('inToken').value.trim();
+  if (!k || !t) { alert('Preencha os dois campos.'); return; }
+  localStorage.setItem('trello_key', k);
+  localStorage.setItem('trello_token', t);
+  document.getElementById('cfgOverlay').style.display = 'none';
+}
+
+function pularCfg() {
+  if (!getKey() || !getToken()) { alert('Voce ainda nao salvou suas credenciais. Preencha os campos.'); return; }
+  document.getElementById('cfgOverlay').style.display = 'none';
+}
+
+function setStatus(msg, tipo) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status ' + tipo;
+  el.style.display = 'block';
+}
+function clearStatus() { document.getElementById('statusMsg').style.display = 'none'; }
+
+async function gerarEstrategia() {
+  const respostas = document.getElementById('respostasInput').value.trim();
+  const notas = document.getElementById('notasInput').value.trim();
+  if (!respostas) { alert('Cole as respostas antes de gerar.'); return; }
+
+  const btn = document.getElementById('btnGerar');
+  document.getElementById('btnTrello').disabled = true;
+  document.getElementById('btnNovo').style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><span>&#9679;</span><span>&#9679;</span><span>&#9679;</span></div>';
+  clearStatus();
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultado').style.display = 'none';
+
+  const conteudo = 'Respostas do diagnostico:\n\n' + respostas + (notas ? '\n\nObservacoes da Natasha:\n' + notas : '');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, system: PROMPT, messages: [{ role: 'user', content: conteudo }] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const texto = data.content.map(b => b.text || '').join('');
+    const clean = texto.replace(/```json|```/g, '').trim();
+    estrategia = JSON.parse(clean);
+    renderizar(estrategia);
+    document.getElementById('btnTrello').disabled = false;
+    document.getElementById('btnNovo').style.display = 'flex';
+    setStatus('Estrategia gerada! Clique em Enviar para o Trello quando quiser.', 'info');
+  } catch(err) {
+    console.error(err);
+    setStatus('Erro ao gerar: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Gerar Novamente';
+  }
+}
+
+function renderizar(d) {
+  document.getElementById('cliNome').textContent = d.cliente?.nome || '&#8212;';
+  document.getElementById('cliNicho').textContent = d.cliente?.nicho || '&#8212;';
+  document.getElementById('txtPos').textContent = d.posicionamento || '';
+  document.getElementById('txtEss').textContent = d.essencia || '';
+
+  document.getElementById('pilaresGrid').innerHTML = (d.pilares || []).map(p =>
+    '<div class="pilar"><div class="pilar-n">' + p.numero + '</div><div class="pilar-nome">' + p.nome + '</div><div class="pilar-desc">' + p.descricao + '</div></div>'
+  ).join('');
+
+  document.getElementById('contLista').innerHTML = (d.conteudos || []).map((c, i) =>
+    '<div class="cont-item"><div class="cont-tag">' + c.pilar + '</div><div><div class="cont-fmt">' + c.formato + '</div><div class="cont-tit">' + c.titulo + '</div><div class="cont-int">' + c.intencao + '</div></div><button class="btn-copy" onclick="copiar(this,'' + esc(c.titulo + ' | ' + c.intencao) + '')">&#10021;</button></div>'
+  ).join('');
+
+  document.getElementById('minhasNotas').value = '';
+  document.getElementById('resultado').style.display = 'block';
+  document.getElementById('rightPanel').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function enviarTrello() {
+  if (!estrategia) return;
+  if (!getKey() || !getToken()) { document.getElementById('cfgOverlay').style.display = 'flex'; return; }
+
+  const btn = document.getElementById('btnTrello');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><span>&#9679;</span><span>&#9679;</span><span>&#9679;</span></div>';
+  setStatus('Criando board no Trello...', 'info');
+
+  const d = estrategia;
+  const notas = document.getElementById('minhasNotas').value.trim();
+
+  try {
+    const boardRes = await tp('/boards', { name: d.cliente.nome + ' - Estrategia de Conteudo', defaultLists: false, desc: 'Estrategia criada por Natasha da Rosa | Social Media & Content Creator\nNicho: ' + d.cliente.nicho });
+    const board = await boardRes.json();
+
+    setStatus('Criando listas e cards...', 'info');
+
+    const l0r = await tp('/lists', { name: 'Posicionamento & Estrategia', idBoard: board.id, pos: 1 });
+    const l0 = await l0r.json();
+    await tp('/cards', { idList: l0.id, name: 'Posicionamento de Marca', desc: d.posicionamento });
+    await tp('/cards', { idList: l0.id, name: 'Essencia e Voz', desc: d.essencia });
+    await tp('/cards', { idList: l0.id, name: '3 Pilares Editoriais', desc: d.pilares.map(p => p.numero + ' - ' + p.nome + '\n' + p.descricao).join('\n\n') });
+    if (notas) await tp('/cards', { idList: l0.id, name: 'Anotacoes da Natasha', desc: notas });
+
+    for (let i = 0; i < d.pilares.length; i++) {
+      const p = d.pilares[i];
+      const lr = await tp('/lists', { name: p.numero + ' - ' + p.nome, idBoard: board.id, pos: (i + 2) * 1000 });
+      const l = await lr.json();
+      await tp('/cards', { idList: l.id, name: 'Sobre este pilar', desc: p.descricao });
+      const conts = d.conteudos.filter(c => c.pilar.toLowerCase().includes(p.nome.toLowerCase()) || p.nome.toLowerCase().includes(c.pilar.toLowerCase()));
+      const usar = conts.length > 0 ? conts : d.conteudos.filter((_, idx) => idx % d.pilares.length === i);
+      for (const c of usar) await tp('/cards', { idList: l.id, name: '[' + c.formato + '] ' + c.titulo, desc: 'Intencao: ' + c.intencao });
+    }
+
+    await tp('/lists', { name: 'A Fazer', idBoard: board.id, pos: (d.pilares.length + 2) * 1000 });
+    await tp('/lists', { name: 'Em Producao', idBoard: board.id, pos: (d.pilares.length + 3) * 1000 });
+    await tp('/lists', { name: 'Publicado', idBoard: board.id, pos: (d.pilares.length + 4) * 1000 });
+
+    setStatus('Board criado com sucesso! Abrindo Trello...', 'ok');
+    setTimeout(() => window.open(board.shortUrl, '_blank'), 800);
+  } catch(err) {
+    console.error(err);
+    setStatus('Erro ao criar no Trello: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="13" rx="1"/><rect x="14" y="3" width="7" height="8" rx="1"/></svg> Enviar para o Trello';
+  }
+}
+
+async function tp(endpoint, params) {
+  const url = new URL(TRELLO_API + endpoint);
+  url.searchParams.set('key', getKey());
+  url.searchParams.set('token', getToken());
+  return fetch(url.toString(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
+}
+
+function novoCliente() {
+  if (!confirm('Limpar tudo e comecar um novo cliente?')) return;
+  document.getElementById('respostasInput').value = '';
+  document.getElementById('notasInput').value = '';
+  document.getElementById('minhasNotas').value = '';
+  document.getElementById('resultado').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'flex';
+  document.getElementById('btnTrello').disabled = true;
+  document.getElementById('btnNovo').style.display = 'none';
+  clearStatus();
+  estrategia = null;
+  document.getElementById('respostasInput').focus();
+}
+
+function esc(str) { return str.replace(/'/g, "\'").replace(/"/g, '&quot;'); }
+
+function copiar(btn, texto) {
+  navigator.clipboard.writeText(texto).then(() => {
+    btn.textContent = '&#10003;';
+    btn.style.color = 'var(--vb)';
+    setTimeout(() => { btn.textContent = '&#10021;'; btn.style.color = ''; }, 1500);
+  });
+}
+
+initConfig();
+</script>
+</body>
+</html>
